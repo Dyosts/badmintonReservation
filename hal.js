@@ -34,13 +34,14 @@ function mapFieldtoResourceObject(fieldData) {
         "_links": {
             // A compléter
             "self": halLinkObject(`/fields/${fieldData.id}`),
-            "concerts": halLinkObject(`/fields`),
+            "fields": halLinkObject(`/fields`),
             "book": halLinkObject(`/fields/${fieldData.id}/reservations`),
             // "reservation": halLinkObject(...)
         },
 
         //Données d'un terrain à ajouter ici...
-        nom: fieldData.name
+        name: fieldData.name,
+        availability: fieldData.availability,
     }
 }
 
@@ -48,7 +49,7 @@ function mapFieldListToResourceObject(fields) {
 
     // Préparer les terrains "embarqués" comme ressource
     // par la ressource "la liste des terrains"
-    const embedded = fields.map(concert => mapFieldtoResourceObject(fields));
+    const embedded = fields.map(field => mapFieldtoResourceObject(field));
 
     // La liste des terrains
     return {
@@ -57,9 +58,20 @@ function mapFieldListToResourceObject(fields) {
         },
 
         "_embedded": {
-            "concerts": embedded,
+            "fields": embedded,
         }
     }
 }
 
-module.exports = { halLinkObject, mapFieldtoResourceObject, mapFieldListToResourceObject };
+function mapLoginToResourceObject(login, accessToken) {
+    return {
+        "_links": {
+            "self": halLinkObject(`/login`),
+            "reservations": halLinkObject(`/fields/{id}/reservations`, 'string', '', true)
+        },
+        jwt: accessToken,
+        message: `Bienvenue ${login} !`
+    }
+}
+
+module.exports = { halLinkObject, mapFieldtoResourceObject, mapFieldListToResourceObject, mapLoginToResourceObject };

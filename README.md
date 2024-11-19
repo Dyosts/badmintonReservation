@@ -11,18 +11,16 @@
 ## Conception
 ### Dictionnaire des donnéees
 
-| Nom               | Type    | Description                                                       |
-|-------------------|---------|-------------------------------------------------------------------|
-| id                | UUID    | Identifiant unique des ressources                                 | 
-| pseudo            | String  | Pseudo d'un utilisateur (adhérent ou admin)                       |
-| password          | String  | Mot de passe de l'administrateur                                  |
-| role              | Enum    | Rôle de l'administrateur (admin, user)                            |
-| field             | String  | Nom du terrain (A,B,C,D)                                          |
-| availability      | Boolean | Indique si le terrain est disponible                              |
-| reservation-date  | Date    | Date de la réservation (du lundi au samedi)                       |
-| reservation-start | Time    | Heure de début de la réservation (45 min entre 10h et 22h)        |
-| reservation-end   | Time    | Heure de fin de la réservation (calculé automatiquement)          |
-| user_id           | UUID    | Identifiant unique de l'utilisateur ayant effectué la réservation |
+| Nom              | Type     | Description                                                                  |
+|------------------|----------|------------------------------------------------------------------------------|
+| id               | UUID     | Identifiant unique des ressources                                            | 
+| pseudo           | String   | Pseudo d'un utilisateur (adhérent ou admin)                                  |
+| password         | String   | Mot de passe de l'administrateur                                             |
+| isAdmin          | Boolean  | Rôle de l'administrateur (admin, user)                                       |
+| field            | String   | Nom du terrain (A,B,C,D)                                                     |
+| availability     | Boolean  | Indique si le terrain est disponible                                         |
+| reservation-date | Datetime | Date et heure de la réservation (du lundi au samedi, 45min entre 10h et 22H) |
+| user_id          | UUID     | Identifiant unique de l'utilisateur ayant effectué la réservation            |
 
 ### Liste des ressources
 
@@ -30,7 +28,7 @@
 |--------------------------|--------------------|--------------|-------------------------------|-----------------------------------------------------------------------|
 | Authentification         | /login             | GET          | Aucune                        | Authentifie un utilisateur ou un administrateur et retourne un token. |
 | Liste des terrains       | /fields            | GET          | Aucune                        | Retourne la liste des terrains et leur état de disponibilité.         |
-| Modifier un terrain      | /fields/{id}       | PATCH        | id: identifiant terrain       | Met à jour l’état d’indisponibilité d’un terrain (admin uniquement).  |
+| Modifier un terrain      | /fields/{id}       | PUT          | id: identifiant terrain       | Met à jour l’état d’indisponibilité d’un terrain (admin uniquement).  |
 | Liste des réservations   | /reservations      | GET          | Aucune                        | Retourne les réservations pour la semaine en cours.                   |
 | Ajouter une réservation  | /reservations      | POST         | Aucune                        | Permet de réserver un créneau pour un terrain donné.                  |
 | Annuler une réservation  | /reservations/{id} | DELETE       | id: identifiant réservation   | Supprime une réservation existante.                                   |

@@ -1,11 +1,12 @@
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+const express = require('express');
+const path = require('path');
+const cookieParser = require('cookie-parser');
+const logger = require('morgan');
 
-var routerTerrains = require('./routes/fields');
+const routerFields = require('./routes/fields');
+const routerLogin = require('./routes/login');
 
-var app = express();
+const app = express();
 
 app.use(logger('dev'));
 app.use(express.json());
@@ -13,6 +14,6 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use(routerTerrains);
+app.use(routerFields, routerLogin);
 
 module.exports = app;
