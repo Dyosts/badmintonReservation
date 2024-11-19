@@ -25,38 +25,35 @@ function halLinkObject(url, type = '', name = '', templated = false, deprecation
 }
 
 /**
- * Retourne une représentation Ressource Object (HAL) d'un concert
- * @param {*} concertData Données brutes d'un concert
- * @returns un Ressource Object Concert (spec HAL)
+ * Retourne une représentation Ressource Object (HAL) d'un terrain
+ * @param {*} fieldData Données brutes d'un terrain
+ * @returns un Ressource Object Field (spec HAL)
  */
-function mapFieldtoResourceObject(concertData) {
+function mapFieldtoResourceObject(fieldData) {
     return {
         "_links": {
             // A compléter
-            "self": halLinkObject(`/concerts/${concertData.id}`),
-            "concerts": halLinkObject(`/concerts`),
-            "book": halLinkObject(`/concerts/${concertData.id}/reservations`),
+            "self": halLinkObject(`/fields/${fieldData.id}`),
+            "concerts": halLinkObject(`/fields`),
+            "book": halLinkObject(`/fields/${fieldData.id}/reservations`),
             // "reservation": halLinkObject(...)
         },
 
-        //Données d'un concert à ajouter ici...
-        artist: concertData.artist,
-        location: concertData.location,
-        description: concertData.description,
-        date: concertData.date,
+        //Données d'un terrain à ajouter ici...
+        nom: fieldData.name
     }
 }
 
-function mapFieldListToResourceObject(concerts) {
+function mapFieldListToResourceObject(fields) {
 
-    // Préparer les concerts "embarqués" comme ressource
-    // par la ressource "la liste des concerts  à venir"
-    const embedded = concerts.map(concert => mapFieldtoResourceObject(concerts));
+    // Préparer les terrains "embarqués" comme ressource
+    // par la ressource "la liste des terrains"
+    const embedded = fields.map(concert => mapFieldtoResourceObject(fields));
 
-    // La liste des concerts à venir
+    // La liste des terrains
     return {
         "_links": {
-            "self": halLinkObject(`/concerts`),
+            "self": halLinkObject(`/fields`),
         },
 
         "_embedded": {
@@ -64,6 +61,5 @@ function mapFieldListToResourceObject(concerts) {
         }
     }
 }
-
 
 module.exports = { halLinkObject, mapFieldtoResourceObject, mapFieldListToResourceObject };

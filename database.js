@@ -1,24 +1,16 @@
 // Les Modèles de données
 
-
-class User {
-    constructor(id, nickname, password, role) {
-        this.id = id;
-        this.nickname = nickname;
-        this.password = password;
-        this.role = role;
-    }
-}
 class Field {
-    constructor(id) {
+    constructor(id, name) {
         this.id = id;
+        this.name = name;
     }
 }
-
 // La base de données
 
 const fields = [
-    new Field(1)
+    new Field(1, 'A'),
+    new Field(2, 'B')
 ];
 
 module.exports = {fields};
