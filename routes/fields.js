@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../database');
 const hal = require('../hal');
-const {checkTokenMiddleware} = require("../jwt");
+const {checkAdminTokenMiddleware} = require("../jwt");
 
 
 router.get('/fields', function(req, res) {
@@ -22,13 +22,13 @@ router.get('/fields/:id(\\d+)', function(req, res) {
         res.status(404).json({})
     }
 
-    const fieldResourceObject = hal.mapFieldtoResourceObject(field);
+    const fieldResourceObject = hal.mapFieldToResourceObject(field);
 
     res.status(200).json(fieldResourceObject);
 
 });
 
-router.put('/fields/:id(\\d+)', checkTokenMiddleware, function(req, res) {
+router.put('/fields/:id(\\d+)', checkAdminTokenMiddleware, function(req, res) {
 
     // Récupérer l'ID dans le path
     const id = parseInt(req.params.id);
@@ -42,7 +42,7 @@ router.put('/fields/:id(\\d+)', checkTokenMiddleware, function(req, res) {
 
     field.availability = !field.availability;
 
-    const fieldResourceObject = hal.mapFieldtoResourceObject(field);
+    const fieldResourceObject = hal.mapFieldToResourceObject(field);
     console.log(res.locals.decoded);
     res.status(200).json(fieldResourceObject);
 })

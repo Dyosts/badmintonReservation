@@ -29,7 +29,7 @@ function halLinkObject(url, type = '', name = '', templated = false, deprecation
  * @param {*} fieldData Données brutes d'un terrain
  * @returns un Ressource Object Field (spec HAL)
  */
-function mapFieldtoResourceObject(fieldData) {
+function mapFieldToResourceObject(fieldData) {
     return {
         "_links": {
             // A compléter
@@ -49,7 +49,7 @@ function mapFieldListToResourceObject(fields) {
 
     // Préparer les terrains "embarqués" comme ressource
     // par la ressource "la liste des terrains"
-    const embedded = fields.map(field => mapFieldtoResourceObject(field));
+    const embedded = fields.map(field => mapFieldToResourceObject(field));
 
     // La liste des terrains
     return {
@@ -63,6 +63,12 @@ function mapFieldListToResourceObject(fields) {
     }
 }
 
+/**
+ *
+ * @param login
+ * @param accessToken
+ * @returns un resourceObject Login
+ */
 function mapLoginToResourceObject(login, accessToken) {
     return {
         "_links": {
@@ -74,4 +80,35 @@ function mapLoginToResourceObject(login, accessToken) {
     }
 }
 
-module.exports = { halLinkObject, mapFieldtoResourceObject, mapFieldListToResourceObject, mapLoginToResourceObject };
+/**
+ *
+ * @param reservationData
+ * @returns un resourceObject Reservation
+ */
+function mapReservationToResourceObject(reservationData) {
+    return {
+        "_links": {
+            "self": halLinkObject(`/fields/{id}/reservations/${reservationData.id}`),
+            "reservations": halLinkObject(`/fields/{id}/reservations`)
+        },
+        field: reservationData.field,
+        date: reservationData.date,
+        user: reservationData.user,
+    }
+}
+
+function mapReservationListToResourceObject(reservations) {
+    const embedded = reservations.map(reservation => mapReservationToResourceObject(reservation));
+
+    return {
+        "_links": {
+            "self": halLinkObject(`/fields/{id}/reservations`),
+        },
+
+        "embedded": {
+            "reservations": embedded,
+        }
+    }
+}
+
+module.exports = { halLinkObject, mapFieldToResourceObject, mapFieldListToResourceObject, mapLoginToResourceObject, mapReservationToResourceObject, mapReservationListToResourceObject };

@@ -21,11 +21,22 @@ class User {
     }
 }
 
+class Reservation {
+    constructor(id, field, date, user) {
+        this.id = id;
+        this.field = field;
+        this.date = date;
+        this.user = user;
+    }
+}
+
 // La base de données
 
 const fields = [
     new Field(1, 'A', true),
-    new Field(2, 'B', false)
+    new Field(2, 'B', false),
+    new Field(3, 'C', true),
+    new Field(4, 'D', true),
 ];
 
 const users = [
@@ -36,4 +47,12 @@ const users = [
     new User(5, 'player4', 'pass4player', false)
 ];
 
-module.exports = {fields, users};
+const reservations = [
+    new Reservation(1, 'A', '2024-11-19 10:00', 'player1'),
+    new Reservation(2, 'A','2024-11-19 11:00', 'player1'),
+    new Reservation(3, 'B','2024-11-19 12:00', 'player3'),
+    new Reservation(4, 'C','2024-11-19 13:00', 'player4'),
+    new Reservation(5, 'D','2024-11-19 14:00', 'player2')
+];
+
+module.exports = {fields, users, reservations};
