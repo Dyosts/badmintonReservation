@@ -22,11 +22,11 @@ class User {
 }
 
 class Reservation {
-    constructor(id, field, date, user) {
+    constructor(id, date, fieldId, userId) {
         this.id = id;
-        this.field = field;
         this.date = date;
-        this.user = user;
+        this.fieldId = fieldId;
+        this.userId = userId;
     }
 }
 
@@ -48,11 +48,11 @@ const users = [
 ];
 
 const reservations = [
-    new Reservation(1, 'A', '2024-11-19 10:00', 'player1'),
-    new Reservation(2, 'A','2024-11-19 11:00', 'player1'),
-    new Reservation(3, 'B','2024-11-19 12:00', 'player3'),
-    new Reservation(4, 'C','2024-11-19 13:00', 'player4'),
-    new Reservation(5, 'D','2024-11-19 14:00', 'player2')
+    new Reservation(1, '2024-11-19 10:00', 1, 2),
+    new Reservation(2,'2024-11-19 11:00', 1, 2),
+    new Reservation(3,'2024-11-19 12:00', 2, 4),
+    new Reservation(4,'2024-11-19 13:00', 3,5),
+    new Reservation(5,'2024-11-19 14:00', 4,3)
 ];
 
 module.exports = {fields, users, reservations};

@@ -4,9 +4,10 @@ const db = require('../database');
 const hal = require('../hal');
 const bcrypt = require('bcrypt');
 const jwt = require('../jwt');
+const HALResource = require("../hal");
 
 /**
- * Retourne vrai si l'user est authentifié par le système, faux sinon
+ * Return true if user is authenticated by system
  * @param {*} login
  * @param {*} password
  * @returns
@@ -19,7 +20,7 @@ function authenticate(login, password) {
 }
 
 /**
- * Recherche un utilisateur à partir de son pseudo
+ * Search user with username
  * @param login
  * @returns {User}
  */
@@ -28,49 +29,35 @@ function findUserByPseudo(login) {
 }
 
 /**
- * Vérifie si un utilisateur est admin
- * @param pseudo
+ * Check if user is an admin
+ * @param login
  * @returns {*}
  */
-function isAdmin(pseudo) {
-    const user = findUserByPseudo(pseudo);
+function checkAdmin(login) {
+    const user = findUserByPseudo(login);
     return user.isAdmin;
 }
 
+// POST Authenticate with login and password
 router.post("/login", (req, res) => {
     const login = req.body.login;
     const password = req.body.password;
-    let admin = false;
+    const isAdmin = checkAdmin(login);
+    const EXPIRATION = '1 day';
 
-    // Si authentifié
     if(authenticate(login, password)) {
+        // User authenticated, create JWT
+        const accessToken = jwt.createJWT(login, isAdmin, EXPIRATION);
 
-        // Si admin
-        if (isAdmin(login)) {
-            admin = true;
-        }
-
-        // User est authentifié: Génération d'un access token
-        const accessToken = jwt.createJWT(login, admin, '1  day');
-        // Si réussi, on va fournir un hypermédia JSON HAL (lien vers reservations + access token)
-        const resourceObject = hal.mapLoginToResourceObject(login, accessToken);
-
-        res.status(200).json(resourceObject);
-
-    } else {
-        // Sinon, on retourne un message d'erreur
-        let responseObject = {
-            "_links": {
-                "self": hal.halLinkObject(`/login`),
+        const resource = new HALResource(
+            {
+                jwt: accessToken,
+                message: `Bonjour ${login}`
             },
-            message: "Vos identifiants sont invalides. Merci de réessayer."
-        };
+            `/login`
+        );
 
-        res.status(401).format({
-            "application/hal+json": function () {
-                res.send(responseObject);
-            },
-        });
+        res.status(200).json(resource.toJSON());
     }
 });
 

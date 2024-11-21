@@ -1,50 +1,76 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../database');
-const hal = require('../hal');
+const HALResource = require('../hal');
 const {checkAdminTokenMiddleware} = require("../jwt");
 
-
+// GET all fields
+// Not secured
 router.get('/fields', function(req, res) {
-    const resourceObject = hal.mapFieldListToResourceObject(db.fields);
-    res.status(200).json(resourceObject);
+    const resources = db.fields.map(field => {
+        const fieldResource = new HALResource(
+            {
+                id: field.id,
+                name: field.name,
+                availability: field.availability,
+            },
+            `/fields/${field.id}`
+        );
+        return fieldResource.toJSON();
+    });
+    const response = new HALResource({}, '/fields');
+    response.addEmbedded('fields', resources);
+
+    res.status(200).json(response.toJSON());
 });
 
+// GET specified field by ID
+// Not secured
 router.get('/fields/:id(\\d+)', function(req, res) {
+    const fieldId = parseInt(req.params.id);
+    const field = db.fields.find(field => field.id === fieldId);
 
-    // Récupérer l'id renseigné dans le path
-    const id = parseInt(req.params.id);
-
-    // Trouver le terrain
-    const field = db.fields.find((field) => field.id === id);
-
-    if(field === undefined){
-        res.status(404).json({})
+    if(!field) {
+        res.status(404).json({error: 'Field not found'});
     }
 
-    const fieldResourceObject = hal.mapFieldToResourceObject(field);
+    const resource = new HALResource(
+        {
+            id: field.id,
+            name: field.name,
+            availability: field.availability,
+        },
+        `/fields/${field.id}`
+    );
 
-    res.status(200).json(fieldResourceObject);
+    resource.addLink('reservations', `fields/${field.id}/reservations`);
 
+    res.status(200).json(resource.toJSON());
 });
 
+// PUT Change availability of a specified field
+// Secured by admin token
 router.put('/fields/:id(\\d+)', checkAdminTokenMiddleware, function(req, res) {
+    const fieldId = parseInt(req.params.id);
+    const field = db.fields.find(field => field.id === fieldId);
 
-    // Récupérer l'ID dans le path
-    const id = parseInt(req.params.id);
-
-    // Trouver le terrain
-    const field = db.fields.find((field) => field.id === id);
-
-    if (field === undefined){
-        res.status(404).json({})
+    if(!field) {
+        res.status(404).json({error: 'Field not found'});
     }
 
     field.availability = !field.availability;
+    const resource = new HALResource(
+        {
+            id: field.id,
+            name: field.name,
+            availability: field.availability,
+        },
+        `/fields/${field.id}`
+    );
 
-    const fieldResourceObject = hal.mapFieldToResourceObject(field);
-    console.log(res.locals.decoded);
-    res.status(200).json(fieldResourceObject);
+    resource.addLink('reservations', `fields/${field.id}/reservations`);
+
+    res.status(200).json(resource.toJSON());
 })
 
 module.exports = router;

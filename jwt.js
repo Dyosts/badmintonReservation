@@ -17,19 +17,19 @@ const checkAdminTokenMiddleware = (req, res, next) => {
 
     // Si pas de JWT
     if (!token) {
-        return res.status(401).send('Not authorized');
+        return res.status(401).json('Not authorized');
     }
 
     // Vérification du JWT
     jsonwebtoken.verify(token, SECRET, (err, decoded) => {
         if (err) {
             // La vérification a échoué
-            return res.status(401).send('Not authorized');
+            return res.status(401).json({error: 'Not authorized'});
         }
 
         // Vérification si isAdmin est true
         if (!decoded.isAdmin) {
-            return res.status(403).send('Forbidden: Admins only');
+            return res.status(403).json('Forbidden: Admins only');
         }
 
         // Partager des données entre middlewares si nécessaire
@@ -46,14 +46,14 @@ const checkUserTokenMiddleware = (req, res, next) => {
 
     // Si pas de JWT
     if (!token) {
-        return res.status(401).send('Not authorized');
+        return res.status(401).json('Not authorized');
     }
 
     // Vérification du JWT
     jsonwebtoken.verify(token, SECRET, (err, decoded) => {
         if (err) {
             // La vérification a échoué
-            return res.status(401).send('Not authorized');
+            return res.status(401).json({error: 'Not authorized'});
         }
 
         // Partager des données entre middlewares si nécessaire

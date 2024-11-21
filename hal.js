@@ -1,114 +1,61 @@
-/**
- * Export des fonctions helpers pour la spécification HAL
- * Voir la spécification HAL : https://stateless.group/hal_specification.html
- * Voir la spécification HAL (RFC, source) : https://datatracker.ietf.org/doc/html/draft-kelly-json-hal
- */
-
-/**
- * Retourne un Link Object, conforme à la spécification HAL
- * @param {*} url
- * @param {*} type
- * @param {*} name
- * @param {*} templated
- * @param {*} deprecation
- * @returns
- */
-function halLinkObject(url, type = '', name = '', templated = false, deprecation = false) {
-
-    return {
-        "href": url,
-        "templated": templated,
-        ...(type && { "type": type }),
-        ...(name && { "name": name }),
-        ...(deprecation && { "deprecation": deprecation })
+class HALResource {
+    /**
+     * HAL resource constructor
+     * @param {Object} data
+     * @param {string} selfLink
+     */
+    constructor(data, selfLink) {
+        this._links = {
+            self: {
+                href: selfLink
+            }
+        };
+        Object.assign(this, data);
     }
-}
 
-/**
- * Retourne une représentation Ressource Object (HAL) d'un terrain
- * @param {*} fieldData Données brutes d'un terrain
- * @returns un Ressource Object Field (spec HAL)
- */
-function mapFieldToResourceObject(fieldData) {
-    return {
-        "_links": {
-            // A compléter
-            "self": halLinkObject(`/fields/${fieldData.id}`),
-            "fields": halLinkObject(`/fields`),
-            "book": halLinkObject(`/fields/${fieldData.id}/reservations`),
-            // "reservation": halLinkObject(...)
-        },
-
-        //Données d'un terrain à ajouter ici...
-        name: fieldData.name,
-        availability: fieldData.availability,
-    }
-}
-
-function mapFieldListToResourceObject(fields) {
-
-    // Préparer les terrains "embarqués" comme ressource
-    // par la ressource "la liste des terrains"
-    const embedded = fields.map(field => mapFieldToResourceObject(field));
-
-    // La liste des terrains
-    return {
-        "_links": {
-            "self": halLinkObject(`/fields`),
-        },
-
-        "_embedded": {
-            "fields": embedded,
+    /**
+     * Add link to resource
+     * @param {string} rel
+     * @param {string} href
+     */
+    addLink(rel, href) {
+        if (!this._links[rel]) {
+            this._links[rel] = {
+                href
+            };
         }
     }
-}
 
-/**
- *
- * @param login
- * @param accessToken
- * @returns un resourceObject Login
- */
-function mapLoginToResourceObject(login, accessToken) {
-    return {
-        "_links": {
-            "self": halLinkObject(`/login`),
-            "reservations": halLinkObject(`/fields/{id}/reservations`, 'string', '', true)
-        },
-        jwt: accessToken,
-        message: `Bienvenue ${login} !`
-    }
-}
+    /**
+     * Add embedded to resource
+     * @param {string} rel
+     * @param {HALResource|HALResource[]} resource
+     */
+    addEmbedded(rel, resource) {
+        if (!this._embedded) {
+            this._embedded = {};
+        }
 
-/**
- *
- * @param reservationData
- * @returns un resourceObject Reservation
- */
-function mapReservationToResourceObject(reservationData) {
-    return {
-        "_links": {
-            "self": halLinkObject(`/fields/{id}/reservations/${reservationData.id}`),
-            "reservations": halLinkObject(`/fields/{id}/reservations`)
-        },
-        field: reservationData.field,
-        date: reservationData.date,
-        user: reservationData.user,
-    }
-}
+        if (!this._embedded[rel]) {
+            this._embedded[rel] = [];
+        }
 
-function mapReservationListToResourceObject(reservations) {
-    const embedded = reservations.map(reservation => mapReservationToResourceObject(reservation));
-
-    return {
-        "_links": {
-            "self": halLinkObject(`/fields/{id}/reservations`),
-        },
-
-        "embedded": {
-            "reservations": embedded,
+        if (Array.isArray(resource)) {
+            this._embedded[rel].push(...resource);
+        } else {
+            this._embedded[rel].push(resource);
         }
     }
+
+    /**
+     * Serialize resource to json
+     * @returns {Object}
+     */
+    toJSON() {
+        return {
+            ...this,
+        };
+    }
 }
 
-module.exports = { halLinkObject, mapFieldToResourceObject, mapFieldListToResourceObject, mapLoginToResourceObject, mapReservationToResourceObject, mapReservationListToResourceObject };
+module.exports = HALResource;
