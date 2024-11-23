@@ -30,7 +30,9 @@ function hasTimeConflict(existingReservations, newDate, durationMinutes = 60) {
 // GET all reservations
 // Secured with admin token
 router.get('/reservations', checkAdminTokenMiddleware, function (req, res) {
-    const resources = db.reservations.map(reservation => {
+    const reservations = db.getReservations();
+
+    const resources = reservations.map(reservation => {
         const reservationResource = new HALResource(
             {
                 id: reservation.id,
@@ -51,7 +53,7 @@ router.get('/reservations', checkAdminTokenMiddleware, function (req, res) {
 // TODO reflexion about security
 router.get('/reservations/:id(\\d+)', function(req, res) {
     const id = parseInt(req.params.id);
-    const reservation = db.reservations.find(reservation => reservation.id === id);
+    const reservation = db.getReservationById(id);
 
     if(!reservation) {
         res.status(404).json({error: 'Reservation not found'});
@@ -74,13 +76,14 @@ router.get('/reservations/:id(\\d+)', function(req, res) {
 // TODO reflexion about security
 router.get('/fields/:id(\\d+)/reservations', function (req, res) {
     const fieldId = parseInt(req.params.id);
-    const field = db.fields.find(field => field.id === fieldId);
+    const field = db.getFieldById(fieldId);
+    const reservations = db.getReservations();
 
     if(!field) {
         res.status(404).json({error: 'Field not found'});
     }
 
-    const fieldReservations = db.reservations
+    const fieldReservations = reservations
         .filter(reservation => reservation.fieldId === fieldId)
         .map((reservation) =>
             new HALResource(
@@ -105,8 +108,9 @@ router.post('/fields/:id(\\d+)/reservations', checkUserTokenMiddleware, function
    const fieldId = parseInt(req.params.id);
    const date = req.body.date;
    const userId = res.locals.decoded.login;
+   const field = db.getFieldById(fieldId);
+   const reservations = db.getReservations();
 
-    const field = db.fields.find(f => f.id === fieldId);
     if (!field) {
         return res.status(404).json({ error: 'Field not found' });
     }
@@ -115,7 +119,7 @@ router.post('/fields/:id(\\d+)/reservations', checkUserTokenMiddleware, function
         return res.status(400).json({ error: 'Field is not available for reservations' });
     }
 
-    const fieldReservations = db.reservations.filter(r => r.fieldId === fieldId);
+    const fieldReservations = reservations.filter(r => r.fieldId === fieldId);
     if (hasTimeConflict(fieldReservations, date)) {
         return res.status(409).json({
             error: 'Field is already reserved for the specified time slot',
@@ -123,20 +127,13 @@ router.post('/fields/:id(\\d+)/reservations', checkUserTokenMiddleware, function
     }
 
     const newId = db.reservations.length > 0 ? db.reservations[db.reservations.length - 1].id + 1 : 1;
-    const newReservation = {
-        id: newId,
-        field: fieldId,
-        date: date,
-        user: userId,
-    };
-    db.reservations.push(newReservation);
+    db.addReservation(date, fieldId, userId);
 
     const resource = new HALResource(
         {
             message: `New reservation created`,
-            data: newReservation
         },
-        `/fields/${newReservation.field}/reservations/${newReservation.id}`
+        `/fields/${fieldId}/reservations/${newId}`
     );
     res.status(200).json(resource.toJSON());
 });
@@ -145,17 +142,17 @@ router.post('/fields/:id(\\d+)/reservations', checkUserTokenMiddleware, function
 // Secured by admin token
 router.delete('/reservations/:id(\\d+)', checkAdminTokenMiddleware, function (req, res) {
     const id = parseInt(req.params.id);
-    const reservationIndex = db.reservations.findIndex((r) => r.id === id);
 
-    if(reservationIndex === -1) {
-        res.status(404).json({error: "Reservation not found"})
+    const success = db.deleteReservation(id);
+    let message = `Reservation ${id} successfully deleted`;
+
+    if (!success) {
+        message = `Reservation ${id} not found`;
     }
-
-    db.reservations.splice(reservationIndex, 1);
 
     const resource = new HALResource(
         {
-            message: `Reservation ${id} successfully deleted`
+            message: message
         }, `reservations/${id}`
     );
     res.status(200).json(resource.toJSON());

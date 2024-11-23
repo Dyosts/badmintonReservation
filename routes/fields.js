@@ -7,7 +7,9 @@ const {checkAdminTokenMiddleware} = require("../jwt");
 // GET all fields
 // Not secured
 router.get('/fields', function(req, res) {
-    const resources = db.fields.map(field => {
+    const fields = db.getFields();
+
+    const resources = fields.map(field => {
         const fieldResource = new HALResource(
             {
                 id: field.id,
@@ -28,7 +30,7 @@ router.get('/fields', function(req, res) {
 // Not secured
 router.get('/fields/:id(\\d+)', function(req, res) {
     const fieldId = parseInt(req.params.id);
-    const field = db.fields.find(field => field.id === fieldId);
+    const field = db.getFieldById(fieldId);
 
     if(!field) {
         res.status(404).json({error: 'Field not found'});
@@ -52,23 +54,28 @@ router.get('/fields/:id(\\d+)', function(req, res) {
 // Secured by admin token
 router.put('/fields/:id(\\d+)', checkAdminTokenMiddleware, function(req, res) {
     const fieldId = parseInt(req.params.id);
-    const field = db.fields.find(field => field.id === fieldId);
+    const field = db.getFieldById(fieldId);
 
-    if(!field) {
+    if (!field) {
         res.status(404).json({error: 'Field not found'});
     }
 
-    field.availability = !field.availability;
+    const updatedField = db.updateField(fieldId, { availability: !field.availability });
+
+    if (!updatedField) {
+        return res.status(404).json({ error: 'Field not found' });
+    }
+
     const resource = new HALResource(
         {
-            id: field.id,
-            name: field.name,
-            availability: field.availability,
+            id: updatedField.id,
+            name: updatedField.name,
+            availability: updatedField.availability,
         },
-        `/fields/${field.id}`
+        `/fields/${updatedField.id}`
     );
 
-    resource.addLink('reservations', `fields/${field.id}/reservations`);
+    resource.addLink('reservations', `fields/${updatedField.id}/reservations`);
 
     res.status(200).json(resource.toJSON());
 })
