@@ -12,54 +12,41 @@ const extractBearerToken = headerValue => {
 };
 
 const checkAdminTokenMiddleware = (req, res, next) => {
-    // Récupérer le JWT envoyé par le client
     const token = req.headers.authorization && extractBearerToken(req.headers.authorization);
 
-    // Si pas de JWT
     if (!token) {
         return res.status(401).json('Not authorized');
     }
 
-    // Vérification du JWT
     jsonwebtoken.verify(token, SECRET, (err, decoded) => {
         if (err) {
-            // La vérification a échoué
             return res.status(401).json({error: 'Not authorized'});
         }
 
-        // Vérification si isAdmin est true
         if (!decoded.isAdmin) {
             return res.status(403).json('Forbidden: Admins only');
         }
 
-        // Partager des données entre middlewares si nécessaire
         res.locals.decoded = decoded;
 
-        // Passer au middleware suivant
         next();
     });
 };
 
 const checkUserTokenMiddleware = (req, res, next) => {
-    // Récupérer le JWT envoyé par le client
     const token = req.headers.authorization && extractBearerToken(req.headers.authorization);
 
-    // Si pas de JWT
     if (!token) {
         return res.status(401).json('Not authorized');
     }
 
-    // Vérification du JWT
     jsonwebtoken.verify(token, SECRET, (err, decoded) => {
         if (err) {
-            // La vérification a échoué
             return res.status(401).json({error: 'Not authorized'});
         }
 
-        // Partager des données entre middlewares si nécessaire
         res.locals.decoded = decoded;
 
-        // Passer au middleware suivant
         next();
     });
 };

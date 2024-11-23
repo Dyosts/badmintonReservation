@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../database');
-const hal = require('../hal');
 const bcrypt = require('bcrypt');
 const jwt = require('../jwt');
 const HALResource = require("../hal");
+// @ts-ignore
+const rateLimit = require('express-rate-limit');
 
 /**
  * Return true if user is authenticated by system
@@ -38,8 +39,18 @@ function checkAdmin(login) {
     return user.isAdmin;
 }
 
+/**
+ * Express rate limiter function
+ */
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 15,
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
 // POST Authenticate with login and password
-router.post("/login", (req, res) => {
+router.post("/login", limiter, (req, res) => {
     const login = req.body.login;
     const password = req.body.password;
     const isAdmin = checkAdmin(login);
@@ -58,7 +69,8 @@ router.post("/login", (req, res) => {
         );
 
         res.status(200).json(resource.toJSON());
+    } else {
+        res.status(403).json({error: "Incorrect login or password"});
     }
 });
-
 module.exports = router;

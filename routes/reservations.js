@@ -1,10 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../database');
-const hal = require('../hal');
 const {checkUserTokenMiddleware, checkAdminTokenMiddleware} = require('../jwt');
 const HALResource = require("../hal");
-const resource = require("../hal");
 
 /**
  * Utility function to check time conflicts
@@ -139,6 +137,26 @@ router.post('/fields/:id(\\d+)/reservations', checkUserTokenMiddleware, function
             data: newReservation
         },
         `/fields/${newReservation.field}/reservations/${newReservation.id}`
+    );
+    res.status(200).json(resource.toJSON());
+});
+
+// DELETE a reservation by id
+// Secured by admin token
+router.delete('/reservations/:id(\\d+)', checkAdminTokenMiddleware, function (req, res) {
+    const id = parseInt(req.params.id);
+    const reservationIndex = db.reservations.findIndex((r) => r.id === id);
+
+    if(reservationIndex === -1) {
+        res.status(404).json({error: "Reservation not found"})
+    }
+
+    db.reservations.splice(reservationIndex, 1);
+
+    const resource = new HALResource(
+        {
+            message: `Reservation ${id} successfully deleted`
+        }, `reservations/${id}`
     );
     res.status(200).json(resource.toJSON());
 });
