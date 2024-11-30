@@ -73,8 +73,8 @@ router.get('/reservations/:id(\\d+)', function(req, res) {
 });
 
 // GET reservations from a specified field
-// TODO reflexion about security
-router.get('/fields/:id(\\d+)/reservations', function (req, res) {
+// Secured by admin token
+router.get('/fields/:id(\\d+)/reservations', checkAdminTokenMiddleware, function (req, res) {
     const fieldId = parseInt(req.params.id);
     const field = db.getFieldById(fieldId);
     const reservations = db.getReservations();
