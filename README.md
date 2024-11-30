@@ -3,10 +3,7 @@
 ## Table des matières
 - [Lancer le projet](#lancer-le-projet)
 - [Conception](#conception)
-    - [Dictionnaire des données](#dictionnaire-des-donnéees)
 - [Sécurité](#sécurité)
-  - [JWT](#jwt)
-  - [Rate Limiter](#rate-limiter)
 - [Remarques](#remarques)
 
 ## Lancer le projet
@@ -15,6 +12,29 @@
 git clone
 npm install
 npm run start
+```
+
+## Tester le projet
+
+```
+curl localhost:3000/{url}
+```
+
+### Passer des paramètres
+Exemple login
+```
+curl localhost:3000/login -d "login=monlogin&password=monpassword"
+```
+
+### Utiliser un token
+Après avoir utilisé le login, récupérez le token et enregistrez le dans une variable
+```
+token=montoken
+```
+Vous pouvez également enregistrer l'url localhost:3000 dans la variable $url
+Puis pour l'utiliser dans une requête, par exemple les réservations:
+```
+curl $url/reservations -H "Authorization: Bearer $token"
 ```
 
 ## Conception
