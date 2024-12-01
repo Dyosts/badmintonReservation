@@ -2,16 +2,27 @@
 
 ## Table des matières
 - [Lancer le projet](#lancer-le-projet)
+- [Tester le projet](#tester-le-projet)
 - [Conception](#conception)
 - [Sécurité](#sécurité)
 - [Remarques](#remarques)
 
 ## Lancer le projet
-
+Cloner le projet
 ```
 git clone
+```
+Installer les dépendances
+```
 npm install
+```
+Démarrer le projet
+```
 npm run start
+```
+Créer une clé de sécurité pour le jwt
+```
+node genkey.js
 ```
 
 ## Tester le projet
